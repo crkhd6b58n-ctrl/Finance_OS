@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Ivan · Finance OS</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#07070f;--s1:#0e0e1c;--s2:#151525;--s3:#1c1c30;
+  --border:#252540;--border2:#353555;
+  --text:#eeeef8;--muted:#7777aa;--muted2:#44445a;
+  --accent:#d4ff47;--accent-dim:rgba(212,255,71,0.1);
+  --red:#ff4d6d;--red-dim:rgba(255,77,109,0.12);
+  --green:#47ffaa;--green-dim:rgba(71,255,170,0.08);
+  --blue:#47b8ff;--blue-dim:rgba(71,184,255,0.08);
+  --orange:#ff9f47;--orange-dim:rgba(255,159,71,0.08);
+  --purple:#c084fc;--purple-dim:rgba(192,132,252,0.08);
+  --gold:#ffc847;--gold-dim:rgba(255,200,71,0.08);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;font-size:13px;}
+
+/* Shell */
+.shell{display:flex;flex-direction:column;height:100vh;height:100dvh;}
+.topbar{flex-shrink:0;display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--bg);}
+.topbar-left{display:flex;align-items:center;gap:10px;}
+.topbar-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:800;letter-spacing:-0.5px;}
+.topbar-title span{color:var(--accent);}
+.streak-badge{display:flex;align-items:center;gap:4px;background:var(--gold-dim);border:1px solid rgba(255,200,71,.3);padding:3px 8px;font-size:10px;color:var(--gold);font-weight:700;}
+.topbar-right{display:flex;gap:5px;}
+.tbtn{height:30px;padding:0 10px;border:1px solid var(--border);background:var(--s2);color:var(--muted);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.tbtn:active{transform:scale(.95);}
+.tbtn.primary{background:var(--accent);color:#000;border-color:var(--accent);font-weight:700;}
+
+/* Nav - 6 tabs */
+.nav{flex-shrink:0;display:flex;border-bottom:1px solid var(--border);background:var(--bg);overflow-x:auto;scrollbar-width:none;}
+.nav::-webkit-scrollbar{display:none;}
+.navt{flex:1;min-width:52px;padding:9px 2px;font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;font-family:'DM Mono',monospace;transition:all .15s;white-space:nowrap;}
+.navt.on{color:var(--accent);border-bottom-color:var(--accent);}
+
+.scroll{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;}
+.view{padding:12px 12px 90px;display:none;}
+.view.on{display:block;}
+
+/* Utilities */
+.card{background:var(--s1);border:1px solid var(--border);padding:13px;margin-bottom:9px;}
+.sec-lbl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+.row{display:flex;justify-content:space-between;align-items:flex-start;padding:7px 0;border-bottom:1px solid rgba(37,37,64,.6);font-size:12px;gap:8px;}
+.row:last-child{border-bottom:none;}
+.rl{color:var(--muted);flex:1;line-height:1.5;}
+.rl strong{color:var(--text);}
+.rl .sub{display:block;font-size:10px;color:var(--muted2);margin-top:1px;}
+.rv{white-space:nowrap;font-weight:500;font-size:12px;}
+.neg{color:var(--red);}.pos{color:var(--green);}.yel{color:var(--accent);}
+.gld{color:var(--gold);}.pur{color:var(--purple);}.blu{color:var(--blue);}.orn{color:var(--orange);}
+
+.alert{padding:10px 11px;margin-bottom:9px;font-size:11px;line-height:1.7;display:flex;gap:8px;align-items:flex-start;}
+.alert.danger{background:var(--red-dim);border:1px solid rgba(255,77,109,.25);}
+.alert.warn{background:var(--gold-dim);border:1px solid rgba(255,200,71,.25);}
+.alert.info{background:var(--blue-dim);border:1px solid rgba(71,184,255,.25);}
+.alert.ok{background:var(--green-dim);border:1px solid rgba(71,255,170,.25);}
+.ai{font-size:15px;flex-shrink:0;margin-top:1px;}
+.ab strong{color:var(--text);}
+
+/* ══ AHORA TAB ══ */
+.ahora-hero{background:var(--s1);border:1px solid rgba(212,255,71,.25);padding:16px;margin-bottom:10px;text-align:center;}
+.ahora-question{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;}
+.ahora-buttons{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px;}
+.ahora-btn{padding:14px 10px;border:1px solid var(--border);background:var(--s2);color:var(--text);font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;transition:all .15s;text-align:center;line-height:1.5;}
+.ahora-btn:active{transform:scale(.97);}
+.ahora-btn.active{border-color:var(--accent);background:var(--accent-dim);color:var(--accent);}
+.ahora-btn .ab-icon{font-size:20px;display:block;margin-bottom:4px;}
+
+.step-list{background:var(--s1);border:1px solid var(--border);overflow:hidden;margin-bottom:9px;}
+.step-hdr{padding:10px 13px;background:var(--s2);border-bottom:1px solid var(--border);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);}
+.step{display:flex;align-items:flex-start;gap:10px;padding:11px 13px;border-bottom:1px solid rgba(37,37,64,.5);}
+.step:last-child{border-bottom:none;}
+.step-num{width:22px;height:22px;background:var(--accent);color:#000;font-family:'Syne',sans-serif;font-weight:800;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.step-num.done{background:var(--green-dim);color:var(--green);border:1px solid rgba(71,255,170,.4);}
+.step-body{flex:1;}
+.step-title{font-size:12px;color:var(--text);font-weight:500;margin-bottom:2px;}
+.step-amount{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--accent);margin-bottom:2px;}
+.step-note{font-size:10px;color:var(--muted);line-height:1.5;}
+.copy-btn{font-size:9px;padding:3px 8px;background:var(--s3);border:1px solid var(--border);color:var(--muted);cursor:pointer;font-family:'DM Mono',monospace;margin-top:4px;display:inline-block;}
+.copy-btn:active{color:var(--accent);border-color:var(--accent);}
+
+/* ══ PRESUPUESTO ══ */
+.wk-nav{display:flex;gap:5px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none;margin-bottom:2px;}
+.wk-nav::-webkit-scrollbar{display:none;}
+.wk-btn{flex-shrink:0;padding:7px 10px;border:1px solid var(--border);background:var(--s2);cursor:pointer;text-align:center;min-width:64px;transition:all .15s;}
+.wk-btn.on{border-color:var(--accent);background:var(--accent-dim);}
+.wk-btn.wcut{border-left:3px solid var(--orange);}
+.wk-btn.wfull{border-left:3px solid var(--green);}
+.wk-btn.wbonus{border-left:3px solid var(--gold);}
+.wk-btn.wdone{opacity:.45;}
+.wk-btn:active{transform:scale(.94);}
+.wbn{font-size:8px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:2px;}
+.wbdate{font-size:10px;font-weight:500;}
+.wbinc{font-family:'Syne',sans-serif;font-size:11px;font-weight:800;margin-top:2px;}
+
+.budget-card{background:var(--s1);border:1px solid var(--border);overflow:hidden;margin-bottom:9px;}
+.bc-header{padding:13px 13px 10px;border-bottom:1px solid var(--border);}
+.bc-income{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;}
+.bc-section{padding:0 13px;}
+.bc-sec-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:9px 0 5px;border-top:1px solid var(--border);margin-top:2px;display:flex;justify-content:space-between;}
+.bc-row{display:flex;justify-content:space-between;align-items:flex-start;padding:7px 0;border-bottom:1px solid rgba(37,37,64,.4);gap:8px;}
+.bc-row:last-child{border-bottom:none;}
+.bc-left{display:flex;align-items:flex-start;gap:7px;flex:1;min-width:0;}
+.bc-desc{font-size:12px;color:var(--text);line-height:1.4;}
+.bc-note{font-size:10px;color:var(--muted);margin-top:1px;}
+.bc-amount{font-size:13px;font-weight:600;white-space:nowrap;}
+.bc-total{padding:11px 13px;background:var(--s2);border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.bc-total-label{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:var(--muted);}
+.bc-total-amount{font-family:'Syne',sans-serif;font-size:19px;font-weight:800;}
+
+.action-list{background:var(--s1);border:1px solid rgba(212,255,71,.2);padding:13px;margin-bottom:9px;}
+.al-title{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:10px;font-weight:700;}
+.al-item{display:flex;gap:8px;padding:6px 0;border-bottom:1px solid rgba(37,37,64,.4);font-size:12px;line-height:1.5;cursor:pointer;}
+.al-item:last-child{border-bottom:none;}
+.al-num{color:var(--accent);font-weight:700;flex-shrink:0;min-width:18px;}
+.al-text{color:var(--muted);flex:1;}
+.al-text strong{color:var(--text);}
+.al-item.done .al-text{color:var(--muted2);text-decoration:line-through;}
+.al-item.done .al-num{color:var(--green);}
+
+/* ══ GASTOS ══ */
+.donut-rel{position:relative;width:84px;height:84px;flex-shrink:0;}
+.donut-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;}
+.donut-row{display:flex;align-items:center;gap:14px;margin-bottom:10px;}
+.tx-group{margin-bottom:14px;}
+.tx-ghdr{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:6px 0;border-bottom:1px solid var(--border);margin-bottom:6px;display:flex;justify-content:space-between;}
+.tx{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid rgba(37,37,64,.5);}
+.tx:last-child{border-bottom:none;}
+.tx-ico{width:32px;height:32px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.tx-inf{flex:1;min-width:0;}
+.tx-d{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tx-m{font-size:10px;color:var(--muted);margin-top:1px;}
+.tx-a{font-size:12px;font-weight:500;white-space:nowrap;}
+.tx-del{width:24px;height:24px;border:none;background:transparent;color:var(--muted2);font-size:15px;cursor:pointer;flex-shrink:0;}
+.tx-del:active{color:var(--red);}
+
+/* ══ DEUDAS ══ */
+.dcard{background:var(--s1);border:1px solid var(--border);padding:12px 13px;margin-bottom:8px;}
+.dcard-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+.dcard-name{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;}
+.dpill{font-size:9px;padding:2px 8px;font-weight:600;}
+.dpill.active{background:var(--red-dim);color:var(--red);border:1px solid rgba(255,77,109,.3);}
+.dpill.auto{background:var(--blue-dim);color:var(--blue);border:1px solid rgba(71,184,255,.3);}
+.dpill.done{background:var(--green-dim);color:var(--green);border:1px solid rgba(71,255,170,.3);}
+.dprog{height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:8px;}
+.dprog-fill{height:100%;border-radius:2px;transition:width .6s ease;}
+
+/* MSI */
+.msi-card{background:var(--s1);border:1px solid rgba(71,184,255,.2);padding:12px 13px;margin-bottom:8px;}
+.msi-name{font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px;}
+.msi-prog{height:3px;background:var(--border);border-radius:2px;overflow:hidden;margin:6px 0;}
+.msi-fill{height:100%;background:var(--blue);border-radius:2px;}
+
+/* ══ WISHLIST ══ */
+.wish-card{background:var(--s1);border:1px solid var(--border);padding:13px;margin-bottom:8px;position:relative;}
+.wish-card.affordable{border-color:rgba(71,255,170,.3);}
+.wish-card.soon{border-color:rgba(255,200,71,.3);}
+.wish-card.later{border-color:rgba(37,37,64,.8);}
+.wish-name{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;margin-bottom:2px;}
+.wish-price{font-size:20px;font-weight:700;font-family:'Syne',sans-serif;}
+.wish-status{font-size:9px;padding:3px 9px;font-weight:700;letter-spacing:.5px;display:inline-block;margin-top:6px;}
+.wish-status.affordable{background:var(--green-dim);color:var(--green);border:1px solid rgba(71,255,170,.3);}
+.wish-status.soon{background:var(--gold-dim);color:var(--gold);border:1px solid rgba(255,200,71,.3);}
+.wish-status.later{background:var(--s3);color:var(--muted);border:1px solid var(--border);}
+.wish-del{position:absolute;top:10px;right:10px;width:24px;height:24px;border:none;background:transparent;color:var(--muted2);font-size:15px;cursor:pointer;}
+.wish-del:active{color:var(--red);}
+
+/* ══ SALUD ══ */
+.rx-card{background:var(--s1);border:1px solid var(--border);padding:13px;margin-bottom:9px;}
+.rx-name{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;margin-bottom:8px;}
+.rx-days{font-family:'Syne',sans-serif;font-size:36px;font-weight:800;line-height:1;}
+.rx-label{font-size:10px;color:var(--muted);margin-top:3px;}
+.rx-bar{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin:10px 0;}
+.rx-fill{height:100%;border-radius:3px;transition:width .5s;}
+
+/* Progress bars */
+.bar-wrap{margin:8px 0;}
+.bar-lbl{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:3px;}
+.bar-bg{height:4px;background:var(--border);border-radius:2px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:2px;transition:width .5s;}
+
+/* Modal */
+.overlay{position:fixed;inset:0;background:rgba(7,7,15,.94);z-index:200;display:flex;align-items:flex-end;opacity:0;pointer-events:none;transition:opacity .2s;}
+.overlay.on{opacity:1;pointer-events:all;}
+.modal{width:100%;background:var(--s2);border:1px solid var(--border);border-bottom:none;padding:16px 13px 36px;transform:translateY(100%);transition:transform .25s cubic-bezier(.4,0,.2,1);max-height:92vh;overflow-y:auto;}
+.overlay.on .modal{transform:translateY(0);}
+.mhdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+.mtitle{font-family:'Syne',sans-serif;font-size:14px;font-weight:800;}
+.mcls{width:26px;height:26px;border:1px solid var(--border);background:var(--s3);color:var(--muted);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:17px;}
+.fg{margin-bottom:11px;}
+.flbl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:5px;display:block;}
+.finp{width:100%;background:var(--s3);border:1px solid var(--border);color:var(--text);font-family:'DM Mono',monospace;font-size:15px;padding:10px 11px;outline:none;-webkit-appearance:none;border-radius:0;}
+.finp:focus{border-color:var(--accent);}
+.finp.big{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;text-align:center;color:var(--accent);}
+.finp::placeholder{color:var(--muted2);}
+.type-row{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:11px;}
+.tybtn{padding:10px;border:1px solid var(--border);background:var(--s3);color:var(--muted);font-size:10px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;font-family:'DM Mono',monospace;transition:all .15s;}
+.tybtn.exp.on{border-color:var(--red);color:var(--red);background:var(--red-dim);}
+.tybtn.inc.on{border-color:var(--green);color:var(--green);background:var(--green-dim);}
+.cat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;}
+.catb{padding:8px 2px;border:1px solid var(--border);background:var(--s3);color:var(--muted);cursor:pointer;text-align:center;font-size:8px;font-family:'DM Mono',monospace;display:flex;flex-direction:column;align-items:center;gap:2px;transition:all .15s;}
+.catb .ce{font-size:15px;}
+.catb.on{border-color:var(--accent);color:var(--accent);background:var(--accent-dim);}
+.save-btn{width:100%;padding:13px;background:var(--accent);color:#000;border:none;font-family:'Syne',sans-serif;font-size:12px;font-weight:800;letter-spacing:1px;text-transform:uppercase;cursor:pointer;margin-top:5px;}
+.save-btn:active{opacity:.85;}
+
+.fab{position:fixed;bottom:20px;right:13px;width:50px;height:50px;background:var(--accent);color:#000;border:none;border-radius:50%;font-size:22px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 20px rgba(212,255,71,.3);z-index:100;transition:transform .15s;}
+.fab:active{transform:scale(.9);}
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--s3);border:1px solid var(--border2);padding:8px 13px;font-size:11px;z-index:300;opacity:0;transition:all .2s;white-space:nowrap;}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
+
+@keyframes fin{from{opacity:0;transform:translateY(5px);}to{opacity:1;transform:translateY(0);}}
+.fin{animation:fin .2s ease both;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.5;}}
+.pulse{animation:pulse 2s infinite;}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-title">Ivan<span>.</span></div>
+      <div class="streak-badge" id="streak-display">🔥 0 sem</div>
+    </div>
+    <div class="topbar-right">
+      <button class="tbtn primary" onclick="openModal('expense')">+</button>
+    </div>
+  </div>
+  <div class="nav">
+    <button class="navt on"  onclick="switchTab('ahora',this)">⚡ Ahora</button>
+    <button class="navt"     onclick="switchTab('presup',this)">Plan</button>
+    <button class="navt"     onclick="switchTab('gastos',this)">Gastos</button>
+    <button class="navt"     onclick="switchTab('deudas',this)">Deudas</button>
+    <button class="navt"     onclick="switchTab('wishlist',this)">Wishlist</button>
+    <button class="navt"     onclick="switchTab('salud',this)">Salud</button>
+  </div>
+  <div class="scroll">
+    <div id="tab-ahora"   class="view on"></div>
+    <div id="tab-presup"  class="view"></div>
+    <div id="tab-gastos"  class="view"></div>
+    <div id="tab-deudas"  class="view"></div>
+    <div id="tab-wishlist"class="view"></div>
+    <div id="tab-salud"   class="view"></div>
+  </div>
+</div>
+
+<button class="fab" onclick="openModal('expense')">+</button>
+
+<div class="overlay" id="overlay" onclick="closeOut(event)">
+  <div class="modal" id="modal">
+    <div class="mhdr">
+      <div class="mtitle" id="mtitle">Nuevo gasto</div>
+      <div class="mcls" onclick="closeModal()">×</div>
+    </div>
+    <div id="modal-body"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── Storage keys ─────────────────────────────────────────────────────────
+const SK='iv4_txs', DK='iv4_debts', CK='iv4_checks', WK='iv4_wish', RK='iv4_rx', STK='iv4_streak';
+
+// ─── Categories ───────────────────────────────────────────────────────────
+const CATS=[
+  {id:'salary',e:'💰',l:'Nómina',  c:'#47ffaa'},
+  {id:'bonus', e:'🎁',l:'Bono',    c:'#ffc847'},
+  {id:'gas',   e:'⛽',l:'Gasolina',c:'#ff9f47'},
+  {id:'food',  e:'🍔',l:'Comida',  c:'#ff6b47'},
+  {id:'health',e:'💊',l:'Salud',   c:'#47b8ff'},
+  {id:'debt',  e:'💳',l:'Deuda',   c:'#ff4d6d'},
+  {id:'subs',  e:'📱',l:'Suscr.',  c:'#c084fc'},
+  {id:'car',   e:'🚗',l:'Carro',   c:'#ff9f47'},
+  {id:'med',   e:'🏥',l:'Médico',  c:'#47b8ff'},
+  {id:'save',  e:'🏦',l:'Ahorro',  c:'#d4ff47'},
+  {id:'wish',  e:'✨',l:'Wishlist', c:'#c084fc'},
+  {id:'other', e:'📦',l:'Otro',    c:'#7777aa'},
+];
+
+// ─── Debts initial state ──────────────────────────────────────────────────
+const DEBTS_INIT=[
+  {id:'plata',  n:'Plata Card',    bal:468,   orig:2000,  st:'active',c:'#c084fc',note:'$468 mayo · vence 28 jun'},
+  {id:'bbva',   n:'BBVA Azul',     bal:22000, orig:23673, st:'active',c:'#ff9f47',note:'Mín $1,711 · vence 2 jul'},
+  {id:'nu',     n:'Nu Oro',        bal:30922, orig:54445, st:'active',c:'#ff4d6d',note:'Mín $2,605 · vence 16 jun'},
+  {id:'digitt', n:'Digitt',        bal:22000, orig:27996, st:'active',c:'#47b8ff',note:'$3,664 el 1 jul · junio pagado ✅'},
+  {id:'banorte',n:'Banorte Nómina',bal:34230, orig:41000, st:'auto',  c:'#47ffaa',note:'Auto quincenal $1,028 · vence ~ago 2027'},
+];
+
+// MSI (compras a meses sin interés)
+const MSI_INIT=[
+  {id:'walmart',name:'Walmart (colchón/mueble)',total:17999,paid:3000,monthly:1500,months:12,card:'Nu'},
+  {id:'amazon1',name:'Amazon (electrónico)',    total:4799, paid:3600,monthly:400, months:12,card:'Nu'},
+  {id:'amazon2',name:'Amazon (otro)',           total:1572, paid:1048,monthly:262, months:6, card:'BBVA'},
+  {id:'sria',   name:'Sría. Hda. Sonora',       total:1749, paid:1166,monthly:292, months:6, card:'BBVA'},
+];
+
+// Wishlist initial
+const WISH_INIT=[
+  {id:'gtavi',  name:'GTA VI',        price:1500, emoji:'🎮', note:'19 nov 2026 — merecido'},
+  {id:'viajeq', name:'Viaje / experiencia', price:7000, emoji:'✈️', note:'Con fondo ahorro ene 2027'},
+  {id:'iphone', name:'iPhone upgrade', price:18000,emoji:'📱', note:'Cuando deuda = $0'},
+];
+
+// Rx initial
+const RX_INIT=[
+  {id:'meti',  name:'Metilfenidato (Noku 36)',  date:'2026-04-15', days:30, controlled:true,  note:'Requiere receta nueva cada 30 días'},
+  {id:'escit', name:'Escitalopram 28mg',         date:'2026-04-15', days:30, controlled:false, note:'Sin receta · 18 pastillas quedan ~18 días'},
+];
+
+// ─── Now scenarios ─────────────────────────────────────────────────────────
+const SCENARIOS={
+  nomina_cut:{
+    title:'Nómina llegó 🟠 (con descuento)',
+    subtitle:'$3,239 — semana con descuento Banorte',
+    steps:[
+      {n:'1°',title:'Gasolina',amount:'$600',note:'Lo primero — necesitas moverte',clabe:''},
+      {n:'2°',title:'Nu — abono parcial',amount:'$1,500',note:'Mínimo total $2,605 · completas la siguiente semana',clabe:'638975010275246267'},
+      {n:'3°',title:'Colchón semana',amount:'$1,139',note:'Para comida, imprevistos y gasolina extra',clabe:''},
+    ]
+  },
+  nomina_full:{
+    title:'Nómina llegó 🟢 (semana completa)',
+    subtitle:'$4,614 — sin descuento',
+    steps:[
+      {n:'1°',title:'Gasolina',amount:'$600',note:'Lo primero',clabe:''},
+      {n:'2°',title:'Nu — completar mínimo',amount:'$1,105',note:'Completa los $2,605 del mínimo',clabe:'638975010275246267'},
+      {n:'3°',title:'½ Fondo Digitt',amount:'$1,832',note:'Guardar para pago del 1 de mes · CLABE abajo',clabe:'646180185700386427'},
+      {n:'4°',title:'BBVA — ataque',amount:'$700+',note:'Todo lo que sobre va a BBVA',clabe:'012975674375393894'},
+    ]
+  },
+  digitt_day:{
+    title:'Es 1° de mes — pagar Digitt',
+    subtitle:'Digitt cobra automático o transferencia manual',
+    steps:[
+      {n:'✓',title:'Digitt $3,664',amount:'$3,663.73',note:'Transferir a CLABE de Digitt',clabe:'646180185700386427'},
+      {n:'2',title:'Verificar en la app Digitt',amount:'—',note:'Confirmar que se aplicó correctamente',clabe:''},
+    ]
+  },
+  bbva_min:{
+    title:'BBVA — pagar mínimo',
+    subtitle:'Vence el 2 de cada mes · mínimo $1,711',
+    steps:[
+      {n:'1°',title:'BBVA mínimo',amount:'$1,711.26',note:'Pagar antes del día 2 del mes',clabe:'012975674375393894'},
+      {n:'2°',title:'Extra si puedes',amount:'Lo que sobre',note:'Cada peso extra baja el saldo más rápido',clabe:'012975674375393894'},
+    ]
+  },
+  plata_pay:{
+    title:'Plata — pagar este periodo',
+    subtitle:'$468 de mayo · vence 28 jun',
+    steps:[
+      {n:'1°',title:'Plata Card',amount:'$468',note:'Pagar completo para no generar intereses · tasa 119.9%',clabe:''},
+      {n:'2°',title:'Abrir app Plata',amount:'—',note:'Pagar directo desde la app con el saldo en cuenta',clabe:''},
+    ]
+  },
+};
+
+// ─── Weeks plan ────────────────────────────────────────────────────────────
+const WEEKS=[
+{
+  id:'done1',n:'May',date:'May 2026',type:'cut',income:0,status:'done',incLabel:'✅ Ejecutado',
+  items:[{g:'Pagos realizados',rows:[
+    {icon:'✅',desc:'Plata $605.51 pagada',amt:0,color:'pos'},
+    {icon:'✅',desc:'Tatuaje final $6,000 🎨',amt:0,color:'pos'},
+    {icon:'✅',desc:'Digitt $3,664 pagado',amt:0,color:'pos'},
+    {icon:'✅',desc:'BBVA mínimo $1,711 pagado',amt:0,color:'pos'},
+  ]}],
+  actions:[
+    {t:'Plata $605.51 ✅',done:true},
+    {t:'Tatuaje final — pierna completa 🎨 ✅',done:true},
+    {t:'Digitt $3,664 ✅',done:true},
+    {t:'BBVA mínimo $1,711 ✅',done:true},
+  ],
+  saldo:66.25,
+},
+{
+  id:'s_8jun',n:'8 Jun',date:'Lun 8 Jun',type:'cut',income:3239,status:'current',incLabel:'🟠 Con descuento · Saldo: $66',
+  items:[
+    {g:'Ingresos',rows:[{icon:'💰',desc:'Nómina con descuento',note:'-$1,028 Banorte auto',amt:3239,color:'pos',type:'in'}]},
+    {g:'Pagos',rows:[
+      {icon:'⛽',desc:'Gasolina',amt:-600,color:'neg'},
+      {icon:'💳',desc:'Nu — abono parcial',note:'Mínimo total $2,605 · resto el 16 jun',amt:-1500,color:'neg'},
+    ]},
+    {g:'Colchón',rows:[{icon:'💾',desc:'Para vivir hasta sem 16 jun',amt:1139,color:'yel'}]},
+  ],
+  actions:[
+    {t:'Pagar Nu $1,500 — abono parcial',done:false},
+    {t:'Guardar $1,139 para sobrevivir hasta el 16',done:false},
+    {t:'Gasolina/comida → Plata si hace falta',done:false},
+  ],
+  saldo:3239-600-1500,
+},
+{
+  id:'s_16jun',n:'16 Jun',date:'Lun 16 Jun',type:'full',income:4614,status:'upcoming',incLabel:'🟢 Completa · Nu vence hoy',
+  items:[
+    {g:'Ingresos',rows:[{icon:'💰',desc:'Nómina completa',amt:4614,color:'pos',type:'in'}]},
+    {g:'🔴 Nu vence HOY',rows:[{icon:'💳',desc:'Nu — completar mínimo $1,105',note:'Completa los $2,605 del periodo',amt:-1105,color:'neg'}]},
+    {g:'Fondos y deudas',rows:[
+      {icon:'⛽',desc:'Gasolina',amt:-600,color:'neg'},
+      {icon:'💾',desc:'½ Fondo Digitt julio',note:'CLABE 646180185700386427',amt:-1832,color:'blu'},
+      {icon:'💳',desc:'BBVA — abono',amt:-700,color:'neg'},
+    ]},
+  ],
+  actions:[
+    {t:'Nómina llegue → pagar Nu $1,105 inmediatamente',done:false},
+    {t:'Separar $1,832 para Digitt julio',done:false},
+    {t:'Abonar $700 a BBVA',done:false},
+  ],
+  saldo:4614-1105-600-1832-700,
+},
+{
+  id:'s_23jun',n:'23 Jun',date:'Lun 23 Jun',type:'cut',income:3239,status:'upcoming',incLabel:'🟠 Con descuento',
+  items:[
+    {g:'Ingresos',rows:[{icon:'💰',desc:'Nómina con descuento',amt:3239,color:'pos',type:'in'}]},
+    {g:'Fondos',rows:[
+      {icon:'⛽',desc:'Gasolina',amt:-600,color:'neg'},
+      {icon:'💾',desc:'½ Fondo Digitt julio',amt:-1832,color:'blu'},
+    ]},
+    {g:'Guardado para Plata',rows:[{icon:'💳',desc:'Guardar para Plata vence 29 jun',note:'El lunes 29 llega nómina y pagas Plata',amt:807,color:'yel'}]},
+  ],
+  actions:[
+    {t:'Separar $1,832 para completar fondo Digitt julio',done:false},
+    {t:'Plata $1,312 se paga el lunes 29 con la nómina',done:false},
+  ],
+  saldo:3239-600-1832,
+},
+{
+  id:'s_29jun',n:'29 Jun',date:'Lun 29 Jun',type:'full',income:4614,status:'upcoming',incLabel:'🟢 Completa · Plata vence HOY',
+  items:[
+    {g:'Ingresos',rows:[{icon:'💰',desc:'Nómina completa',amt:4614,color:'pos',type:'in'}]},
+    {g:'🔴 Plata vence HOY',rows:[{icon:'💳',desc:'Plata $1,312.26',note:'Pagar inmediatamente al llegar la nómina',amt:-1312,color:'neg'}]},
+    {g:'Deudas',rows:[
+      {icon:'💾',desc:'Digitt 1 jul — fondo listo ✅',note:'Ya tienes los $3,664 guardados',amt:0,color:'blu'},
+      {icon:'💳',desc:'BBVA — ataque fuerte',amt:-2000,color:'neg'},
+      {icon:'⛽',desc:'Gasolina',amt:-600,color:'neg'},
+    ]},
+  ],
+  actions:[
+    {t:'Pagar Plata $1,312 al llegar la nómina',done:false},
+    {t:'Digitt 1 jul — ya cubierto con fondo ✅',done:false},
+    {t:'Mandar $2,000 a BBVA',done:false},
+  ],
+  saldo:4614-1312-2000-600,
+},
+{
+  id:'sjul_oct',n:'Jul–Oct',date:'Jul–Oct 2026',type:'full',income:3926,status:'upcoming',incLabel:'📊 Ritmo mensual',
+  items:[
+    {g:'🟠 Con descuento $3,239',rows:[
+      {icon:'💰',desc:'Nómina',amt:3239,color:'pos',type:'in'},
+      {icon:'⛽',desc:'Gasolina',amt:-600,color:'neg'},
+      {icon:'💾',desc:'½ Fondo Digitt',amt:-1832,color:'blu'},
+    ]},
+    {g:'🟢 Completa $4,614',rows:[
+      {icon:'💰',desc:'Nómina',amt:4614,color:'pos',type:'in'},
+      {icon:'⛽',desc:'Gasolina',amt:-600,color:'neg'},
+      {icon:'💾',desc:'½ Fondo Digitt',amt:-1832,color:'blu'},
+      {icon:'💳',desc:'BBVA — ataque',amt:-1500,color:'neg'},
+    ]},
+    {g:'Médicos',rows:[
+      {icon:'🏥',desc:'Psiquiatra 27 Jul',note:'$1,500 · privado',amt:-1500,color:'neg'},
+      {icon:'💊',desc:'Medicamento nueva receta',note:'~$1,450',amt:-1450,color:'neg'},
+    ]},
+  ],
+  actions:[
+    {t:'Día 1 de cada mes → Digitt $3,664',done:false},
+    {t:'27 jul → psiquiatra $1,500',done:false},
+    {t:'BBVA liquida ~sep/oct 2026',done:false},
+  ],
+  saldo:null,
+},
+{
+  id:'snov',n:'Nov',date:'Nov 2026',type:'bonus',income:4614,status:'upcoming',incLabel:'🎮 GTA VI · ✅ Digitt+BBVA',
+  items:[
+    {g:'Victorias',rows:[
+      {icon:'✅',desc:'BBVA: $0',note:'Cancela la tarjeta',amt:0,color:'pos'},
+      {icon:'✅',desc:'Digitt: $0 el 1 nov',amt:0,color:'pos'},
+    ]},
+    {g:'Premio',rows:[{icon:'🎮',desc:'GTA VI — merecido',amt:-1500,color:'pur'}]},
+    {g:'Nu recibe todo',rows:[{icon:'💳',desc:'Todo el dinero liberado → Nu',note:'~$4,500/sem',amt:0,color:'yel'}]},
+  ],
+  actions:[{t:'1 nov → última Digitt',done:false},{t:'19 nov → GTA VI 🎮',done:false},{t:'Todo a Nu',done:false}],
+  saldo:null,
+},
+{
+  id:'sdic',n:'Dic',date:'~20 Dic 2026',type:'bonus',income:18456,status:'upcoming',incLabel:'🥇 Aguinaldo $18,456',
+  items:[
+    {g:'Aguinaldo',rows:[{icon:'🥇',desc:'Aguinaldo ~$18,456',amt:18456,color:'gld',type:'in'}]},
+    {g:'Distribución',rows:[
+      {icon:'💳',desc:'Nu — golpe fuerte',amt:-12000,color:'neg'},
+      {icon:'🏦',desc:'Banorte — capital',note:'CLABE 072971000904056709',amt:-3000,color:'blu'},
+      {icon:'🎄',desc:'Navidad',amt:-2000,color:'neg'},
+      {icon:'💾',desc:'Colchón',amt:-1456,color:'yel'},
+    ]},
+  ],
+  actions:[{t:'$12,000 a Nu',done:false},{t:'$3,000 a Banorte capital',done:false}],
+  saldo:null,
+},
+{
+  id:'sene27',n:'Ene 27',date:'Ene 2027',type:'bonus',income:50000,status:'upcoming',incLabel:'⚡ Fondo $50,000',
+  items:[
+    {g:'Fondo ahorro',rows:[{icon:'⚡',desc:'Fondo ahorro',amt:50000,color:'pos',type:'in'}]},
+    {g:'Distribución',rows:[
+      {icon:'💳',desc:'Nu — liquidar',note:'~$10-15K',amt:-15000,color:'neg'},
+      {icon:'🏦',desc:'Banorte — capital fuerte',note:'Baja a ~$12K · termina ago 2027',amt:-15000,color:'blu'},
+      {icon:'🏦',desc:'Fondo emergencia',amt:-8000,color:'neg'},
+      {icon:'🏠',desc:'Inicio enganche casa',amt:-5000,color:'orn'},
+      {icon:'🎁',desc:'Premio merecido',amt:-5000,color:'pur'},
+      {icon:'💾',desc:'Colchón',amt:-2000,color:'yel'},
+    ]},
+  ],
+  actions:[{t:'Nu: $0 ✅',done:false},{t:'Banorte baja a ~$12K',done:false},{t:'Revisar INFONAVIT',done:false}],
+  saldo:null,
+},
+{
+  id:'sago27',n:'Ago 27',date:'Ago 2027',type:'bonus',income:0,status:'upcoming',incLabel:'🏁 Deuda total: $0',
+  items:[
+    {g:'Todo en $0',rows:[
+      {icon:'✅',desc:'Plata: $0',amt:0,color:'pos'},{icon:'✅',desc:'BBVA: $0',amt:0,color:'pos'},
+      {icon:'✅',desc:'Digitt: $0',amt:0,color:'pos'},{icon:'✅',desc:'Nu: $0',amt:0,color:'pos'},
+      {icon:'✅',desc:'Banorte: $0',amt:0,color:'pos'},
+    ]},
+    {g:'Tu nueva vida',rows:[
+      {icon:'💰',desc:'$4,614/sem sin descuentos',amt:0,color:'pos'},
+      {icon:'🏠',desc:'Fondo enganche casa ~$100K+',amt:0,color:'orn'},
+    ]},
+  ],
+  actions:[{t:'Celebrar 🎉',done:false},{t:'Solicitar INFONAVIT',done:false},{t:'Invertir en CETES/fondo',done:false}],
+  saldo:null,
+},
+];
+
+// ─── State ─────────────────────────────────────────────────────────────────
+let txs=[],debts=[],checks={},wishlist=[],rxList=[],streakData={weeks:0,lastCheck:''},curType='expense',curCat='other',curTab='ahora',selWk=1,modalMode='expense',curPeriod='';
+
+function load(){
+  try{txs=JSON.parse(localStorage.getItem(SK))||[];}catch{txs=[];}
+  try{debts=JSON.parse(localStorage.getItem(DK))||DEBTS_INIT;}catch{debts=DEBTS_INIT;}
+  try{checks=JSON.parse(localStorage.getItem(CK))||{};}catch{checks={};}
+  try{wishlist=JSON.parse(localStorage.getItem(WK))||WISH_INIT;}catch{wishlist=WISH_INIT;}
+  try{rxList=JSON.parse(localStorage.getItem(RK))||RX_INIT;}catch{rxList=RX_INIT;}
+  try{streakData=JSON.parse(localStorage.getItem(STK))||{weeks:0,lastCheck:''};}catch{streakData={weeks:0,lastCheck:''};}
+  if(!txs.length)seedData();
+  updateStreak();
+}
+function save(){
+  localStorage.setItem(SK,JSON.stringify(txs));
+  localStorage.setItem(DK,JSON.stringify(debts));
+  localStorage.setItem(CK,JSON.stringify(checks));
+  localStorage.setItem(WK,JSON.stringify(wishlist));
+  localStorage.setItem(RK,JSON.stringify(rxList));
+  localStorage.setItem(STK,JSON.stringify(streakData));
+}
+function seedData(){
+  txs=[
+    {id:'s1',type:'income', amt:9131.72,desc:'Nómina + utilidades mayo',cat:'salary',date:'2026-05-25'},
+    {id:'s2',type:'expense',amt:605.51, desc:'Plata Card — pagada ✅',   cat:'debt',  date:'2026-05-25'},
+    {id:'s3',type:'expense',amt:6000,   desc:'Tatuaje — pierna completa 🎨',cat:'other',date:'2026-05-26'},
+    {id:'s4',type:'expense',amt:3664,   desc:'Digitt junio ✅',           cat:'debt',  date:'2026-06-02'},
+    {id:'s5',type:'expense',amt:1711.26,desc:'BBVA mínimo ✅',            cat:'debt',  date:'2026-06-02'},
+  ];
+  debts=[...DEBTS_INIT];
+  save();
+}
+
+// ─── Helpers ───────────────────────────────────────────────────────────────
+const fmt=n=>'$'+Math.abs(n).toLocaleString('es-MX',{minimumFractionDigits:0,maximumFractionDigits:0});
+const fmtD=n=>'$'+Math.abs(n).toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2});
+function fmtDate(d){const[y,m,day]=d.split('-');const mn=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];return`${parseInt(day)} ${mn[parseInt(m)-1]}`;}
+function weekOf(d){const dt=new Date(d+'T12:00');const dy=dt.getDay();const df=dt.getDate()-dy+(dy===0?-6:1);const mn=new Date(dt);mn.setDate(df);return mn.toISOString().substring(0,10);}
+function wkLabel(w){const d=new Date(w+'T12:00');const mn=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];return`${d.getDate()} ${mn[d.getMonth()]}`;}
+function getPeriods(){const s=new Set();txs.forEach(t=>s.add(t.date.substring(0,7)));const n=new Date();s.add(`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}`);return[...s].sort().reverse();}
+function periodTxs(p){return txs.filter(t=>t.date.startsWith(p));}
+function periodLabel(p){const[y,m]=p.split('-');const mn=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];return`${mn[parseInt(m)-1]} ${y}`;}
+function cat(id){return CATS.find(c=>c.id===id)||{e:'📦',l:id,c:'#555'};}
+function daysUntil(dateStr){const t=new Date(dateStr+'T12:00');const n=new Date();return Math.ceil((t-n)/(1000*60*60*24));}
+function addDays(dateStr,days){const d=new Date(dateStr+'T12:00');d.setDate(d.getDate()+days);return d.toISOString().split('T')[0];}
+
+// ─── Streak ────────────────────────────────────────────────────────────────
+function updateStreak(){
+  document.getElementById('streak-display').textContent=`🔥 ${streakData.weeks} sem`;
+}
+function checkInStreak(){
+  const today=new Date().toISOString().split('T')[0];
+  const lastWeek=streakData.lastCheck?weekOf(streakData.lastCheck):'';
+  const thisWeek=weekOf(today);
+  if(thisWeek!==lastWeek){
+    streakData.weeks++;
+    streakData.lastCheck=today;
+    save();updateStreak();
+    toast(`🔥 ¡Racha de ${streakData.weeks} semanas!`);
+  } else {
+    toast('Ya registraste esta semana ✓');
+  }
+}
+
+// ─── AHORA tab ─────────────────────────────────────────────────────────────
+let ahoraScenario=null;
+function renderAhora(){
+  const activeDebts=debts.filter(d=>d.st!=='done');
+  const totalDebt=activeDebts.reduce((a,d)=>a+d.bal,0);
+
+  let h=`
+  <div class="ahora-hero fin">
+    <div class="ahora-question">¿Qué necesitas hacer ahorita?</div>
+    <div class="ahora-buttons">
+      <button class="ahora-btn ${ahoraScenario==='nomina_cut'?'active':''}" onclick="showScenario('nomina_cut')">
+        <span class="ab-icon">🟠</span>Llegó nómina<br><small style="color:var(--muted)">con descuento</small>
+      </button>
+      <button class="ahora-btn ${ahoraScenario==='nomina_full'?'active':''}" onclick="showScenario('nomina_full')">
+        <span class="ab-icon">🟢</span>Llegó nómina<br><small style="color:var(--muted)">completa</small>
+      </button>
+      <button class="ahora-btn ${ahoraScenario==='digitt_day'?'active':''}" onclick="showScenario('digitt_day')">
+        <span class="ab-icon">💾</span>Es día 1<br><small style="color:var(--muted)">pagar Digitt</small>
+      </button>
+      <button class="ahora-btn ${ahoraScenario==='bbva_min'?'active':''}" onclick="showScenario('bbva_min')">
+        <span class="ab-icon">💳</span>BBVA mínimo<br><small style="color:var(--muted)">vence día 2</small>
+      </button>
+      <button class="ahora-btn ${ahoraScenario==='plata_pay'?'active':''}" onclick="showScenario('plata_pay')">
+        <span class="ab-icon">🟣</span>Plata Card<br><small style="color:var(--muted)">pagar periodo</small>
+      </button>
+      <button class="ahora-btn" onclick="checkInStreak()">
+        <span class="ab-icon">🔥</span>Check-in<br><small style="color:var(--muted)">racha semanal</small>
+      </button>
+    </div>
+  </div>`;
+
+  if(ahoraScenario && SCENARIOS[ahoraScenario]){
+    const sc=SCENARIOS[ahoraScenario];
+    h+=`<div class="step-list fin">
+      <div class="step-hdr">${sc.title} — ${sc.subtitle}</div>`;
+    sc.steps.forEach((s,i)=>{
+      h+=`<div class="step">
+        <div class="step-num">${s.n}</div>
+        <div class="step-body">
+          <div class="step-title">${s.title}</div>
+          <div class="step-amount">${s.amount}</div>
+          <div class="step-note">${s.note}</div>
+          ${s.clabe?`<button class="copy-btn" onclick="copyClabe('${s.clabe}')">📋 CLABE: ${s.clabe.substring(0,6)}...${s.clabe.substring(12)}</button>`:''}
+        </div>
+      </div>`;
+    });
+    h+=`</div>`;
+  }
+
+  // Resumen estado actual
+  h+=`<div class="card fin">
+    <div class="sec-lbl">Estado de deudas — hoy</div>
+    <div class="row"><span class="rl"><strong>Nu Oro</strong><span class="sub">Vence 16 jun · mín $2,605</span></span><span class="rv neg">${fmt(30922)}</span></div>
+    <div class="row"><span class="rl"><strong>BBVA Azul</strong><span class="sub">Vence 2 jul · mín $1,711</span></span><span class="rv neg">${fmt(22000)}</span></div>
+    <div class="row"><span class="rl"><strong>Digitt</strong><span class="sub">Junio pagado ✅ · Jul: 1 jul</span></span><span class="rv blu">${fmt(22000)}</span></div>
+    <div class="row"><span class="rl"><strong>Banorte</strong><span class="sub">Auto quincenal $1,028</span></span><span class="rv blu">${fmt(34230)}</span></div>
+    <div class="row"><span class="rl"><strong>Plata</strong><span class="sub">$468 · vence 28 jun</span></span><span class="rv pur">${fmt(468)}</span></div>
+    <div class="row"><span class="rl"><strong>Total deuda</strong></span><span class="rv neg" style="font-family:'Syne',sans-serif;font-size:15px;font-weight:800;">${fmt(totalDebt)}</span></div>
+  </div>
+
+  <div class="alert info fin">
+    <div class="ai">📋</div>
+    <div class="ab"><strong>CLABEs guardadas:</strong><br>
+    Nu: 638975010275246267<br>
+    Digitt: 646180185700386427<br>
+    BBVA: 012975674375393894<br>
+    Banorte capital: 072971000904056709</div>
+  </div>`;
+
+  document.getElementById('tab-ahora').innerHTML=h;
+}
+
+function showScenario(id){
+  ahoraScenario=ahoraScenario===id?null:id;
+  renderAhora();
+}
+
+function copyClabe(clabe){
+  navigator.clipboard.writeText(clabe).then(()=>toast('CLABE copiada ✓')).catch(()=>{
+    const el=document.createElement('textarea');el.value=clabe;document.body.appendChild(el);el.select();document.execCommand('copy');document.body.removeChild(el);toast('CLABE copiada ✓');
+  });
+}
+
+// ─── PRESUPUESTO ──────────────────────────────────────────────────────────
+function renderPresup(){
+  const w=WEEKS[selWk];
+  const colorMap={cut:'var(--orange)',full:'var(--green)',bonus:'var(--gold)'};
+  const incColor=colorMap[w.type]||'var(--green)';
+  const statusMap={
+    done:{txt:'Ejecutada',bg:'var(--green-dim)',c:'var(--green)',border:'rgba(71,255,170,.3)'},
+    current:{txt:'AHORA',bg:'var(--red-dim)',c:'var(--red)',border:'rgba(255,77,109,.3)'},
+    upcoming:{txt:'Próxima',bg:'var(--s3)',c:'var(--muted)',border:'var(--border)'}
+  };
+  const st=statusMap[w.status]||statusMap.upcoming;
+
+  let totalIn=0,totalOut=0;
+  w.items.forEach(sec=>sec.rows.forEach(r=>{
+    if(r.type==='in')totalIn+=r.amt;
+    else if(r.amt<0)totalOut+=Math.abs(r.amt);
+  }));
+  const bal=w.saldo!==null?w.saldo:totalIn-totalOut;
+  const pct=totalIn>0?Math.min(100,Math.round(totalOut/totalIn*100)):0;
+  const pctColor=pct<70?'var(--green)':pct<90?'var(--gold)':'var(--red)';
+
+  let h=`<div class="wk-nav">`;
+  WEEKS.forEach((wk,i)=>{
+    const ic=colorMap[wk.type]||'var(--green)';
+    const cls=`wk-btn w${wk.type}${i===selWk?' on':''}${wk.status==='done'?' wdone':''}`;
+    h+=`<div class="${cls}" onclick="selWeek(${i})">
+      <div class="wbn">${wk.n}</div>
+      <div class="wbdate" style="font-size:9px;">${wk.date.replace('Lun ','')}</div>
+      <div class="wbinc" style="color:${ic};">${wk.income>0?fmt(wk.income):'🏁'}</div>
+    </div>`;
+  });
+  h+=`</div>`;
+
+  h+=`<div class="budget-card fin">
+    <div class="bc-header">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div>
+          <div style="font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:3px;">${w.n} · ${w.date}</div>
+          <div class="bc-income" style="color:${incColor};">${w.income>0?fmt(w.income):'Deuda: $0'}</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px;">${w.incLabel}</div>
+        </div>
+        <span style="font-size:9px;padding:3px 9px;font-weight:700;background:${st.bg};color:${st.c};border:1px solid ${st.border};">${st.txt}</span>
+      </div>
+      ${totalIn>0?`<div style="margin-top:10px;">
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:3px;"><span style="color:${pctColor};">${pct}% comprometido</span><span>Libre: <span style="color:${bal>=0?'var(--green)':'var(--red)'};">${bal>=0?'+':''}${fmt(bal)}</span></span></div>
+        <div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden;"><div style="height:100%;width:${pct}%;background:${pctColor};border-radius:2px;"></div></div>
+      </div>`:''}
+    </div>`;
+
+  w.items.forEach(sec=>{
+    const secTotal=sec.rows.reduce((a,r)=>a+(r.amt||0),0);
+    h+=`<div class="bc-section">
+      <div class="bc-sec-label">
+        <span>${sec.g}</span>
+        ${secTotal!==0&&sec.rows.some(r=>r.amt!==0)?`<span style="color:${secTotal>0?'var(--green)':'var(--red)'};">${secTotal>0?'+':''}${fmt(secTotal)}</span>`:''}
+      </div>`;
+    sec.rows.forEach(r=>{
+      const cv={pos:'var(--green)',neg:'var(--red)',yel:'var(--accent)',pur:'var(--purple)',blu:'var(--blue)',orn:'var(--orange)',gld:'var(--gold)'}[r.color]||'var(--text)';
+      const sign=r.type==='in'?'+':r.amt<0?'−':'';
+      const display=r.amt===0?'—':`${sign}${fmt(Math.abs(r.amt))}`;
+      h+=`<div class="bc-row">
+        <div class="bc-left">
+          <div style="font-size:14px;">${r.icon}</div>
+          <div><div class="bc-desc">${r.desc}</div>${r.note?`<div class="bc-note">${r.note}</div>`:''}</div>
+        </div>
+        <div class="bc-amount" style="color:${cv};">${display}</div>
+      </div>`;
+    });
+    h+=`</div>`;
+  });
+
+  if(w.saldo!==null){
+    h+=`<div class="bc-total">
+      <div class="bc-total-label">${bal>=0?'Libre':'Déficit'}</div>
+      <div class="bc-total-amount" style="color:${bal>=0?'var(--green)':'var(--red)'};">${bal>=0?'+':''}${fmt(bal)}</div>
+    </div>`;
+  }
+  h+=`</div>`;
+
+  if(w.actions&&w.actions.length){
+    h+=`<div class="action-list fin"><div class="al-title">✅ Checklist</div>`;
+    w.actions.forEach((a,i)=>{
+      const key=`${w.id}_${i}`;
+      const done=checks[key]||a.done||false;
+      h+=`<div class="al-item ${done?'done':''}" onclick="toggleCheck('${key}')">
+        <div class="al-num">${done?'✓':i+1}</div>
+        <div class="al-text">${a.t}</div>
+      </div>`;
+    });
+    h+=`</div>`;
+  }
+
+  // Timeline
+  h+=`<div class="card fin">
+    <div class="sec-lbl">Línea de tiempo</div>
+    <div class="row"><span class="rl"><strong>May 2026</strong><span class="sub">✅ Plata · Tatuaje · Digitt · BBVA mín</span></span><span class="rv pos">Hecho</span></div>
+    <div class="row"><span class="rl"><strong>16 Jun</strong><span class="sub">Nu mínimo completo</span></span><span class="rv neg">~8 días</span></div>
+    <div class="row"><span class="rl"><strong>29 Jun</strong><span class="sub">Plata $1,312 + Digitt jul cubierto</span></span><span class="rv orn">~21 días</span></div>
+    <div class="row"><span class="rl"><strong>Sep/Oct 2026</strong><span class="sub">BBVA: $0 ✅</span></span><span class="rv orn">~4 meses</span></div>
+    <div class="row"><span class="rl"><strong>1 Nov 2026</strong><span class="sub">Digitt: $0 · GTA VI 🎮</span></span><span class="rv orn">~5 meses</span></div>
+    <div class="row"><span class="rl"><strong>~20 Dic 2026</strong><span class="sub">Aguinaldo → Nu $12K + Banorte $3K</span></span><span class="rv gld">~6.5 meses</span></div>
+    <div class="row"><span class="rl"><strong>Ene 2027</strong><span class="sub">Fondo $50K → Nu: $0 · Banorte baja</span></span><span class="rv yel">~7 meses</span></div>
+    <div class="row"><span class="rl"><strong>Ago 2027</strong><span class="sub">🏁 Banorte: $0 · Deuda total: $0</span></span><span class="rv pos">~14 meses</span></div>
+  </div>`;
+
+  document.getElementById('tab-presup').innerHTML=h;
+}
+
+function selWeek(i){selWk=i;renderPresup();}
+function toggleCheck(key){checks[key]=!checks[key];save();renderPresup();}
+
+// ─── GASTOS ───────────────────────────────────────────────────────────────
+function renderGastos(){
+  const periods=getPeriods();
+  const curP=curPeriod||periods[0]||'2026-06';
+  const list=periodTxs(curP).slice().sort((a,b)=>b.date.localeCompare(a.date));
+  const income=list.filter(t=>t.type==='income').reduce((a,t)=>a+t.amt,0);
+  const expense=list.filter(t=>t.type==='expense').reduce((a,t)=>a+t.amt,0);
+  const bal=income-expense;
+  const pct=income>0?Math.min(100,Math.round(expense/income*100)):0;
+  const r=36,circ=2*Math.PI*r;
+  const rc=pct<60?'var(--green)':pct<85?'var(--gold)':'var(--red)';
+
+  let h=`<div class="card fin">
+    <div class="donut-row">
+      <div class="donut-rel">
+        <svg width="84" height="84" viewBox="0 0 84 84" style="transform:rotate(-90deg);">
+          <circle cx="42" cy="42" r="${r}" fill="none" stroke="var(--border)" stroke-width="8"/>
+          <circle cx="42" cy="42" r="${r}" fill="none" stroke="${rc}" stroke-width="8"
+            stroke-dasharray="${circ}" stroke-dashoffset="${circ*(1-pct/100)}" stroke-linecap="round"/>
+        </svg>
+        <div class="donut-center">
+          <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:${rc};">${pct}%</div>
+          <div style="font-size:9px;color:var(--muted);">usado</div>
+        </div>
+      </div>
+      <div style="flex:1;">
+        <div class="row"><span class="rl">Ingresos</span><span class="rv pos">${fmt(income)}</span></div>
+        <div class="row"><span class="rl">Gastos</span><span class="rv neg">${fmt(expense)}</span></div>
+        <div class="row"><span class="rl">Balance</span><span class="rv" style="color:${bal>=0?'var(--green)':'var(--red)'};">${bal>=0?'+':''}${fmtD(bal)}</span></div>
+      </div>
+    </div>
+  </div>`;
+
+  h+=`<div style="display:flex;gap:5px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none;">`;
+  periods.slice(0,6).forEach(p=>{
+    h+=`<button onclick="switchPeriod('${p}')" style="flex-shrink:0;padding:5px 10px;border:1px solid var(--border);background:${p===curP?'var(--accent)':'var(--s2)'};color:${p===curP?'#000':'var(--muted)'};font-size:10px;font-family:'DM Mono',monospace;cursor:pointer;">${periodLabel(p)}</button>`;
+  });
+  h+=`</div>`;
+
+  if(!list.length){
+    h+=`<div style="text-align:center;padding:40px 0;color:var(--muted);"><div style="font-size:32px;margin-bottom:8px;opacity:.4;">💸</div>Sin registros · toca + para agregar</div>`;
+  } else {
+    const byW={};
+    list.forEach(t=>{const w=weekOf(t.date);if(!byW[w])byW[w]=[];byW[w].push(t);});
+    Object.keys(byW).sort().reverse().forEach(w=>{
+      const items=byW[w];
+      const wBal=items.reduce((a,t)=>a+(t.type==='income'?t.amt:-t.amt),0);
+      h+=`<div class="tx-group">
+        <div class="tx-ghdr"><span>Sem ${wkLabel(w)}</span><span style="color:${wBal>=0?'var(--green)':'var(--red)'};">${wBal>=0?'+':''}${fmt(wBal)}</span></div>`;
+      items.forEach(t=>{
+        const c=cat(t.cat);
+        h+=`<div class="tx">
+          <div class="tx-ico" style="background:${c.c}22;">${c.e}</div>
+          <div class="tx-inf"><div class="tx-d">${t.desc}</div><div class="tx-m">${fmtDate(t.date)} · ${c.l}</div></div>
+          <div class="tx-a ${t.type==='expense'?'neg':'pos'}">${t.type==='expense'?'-':'+'}${fmt(t.amt)}</div>
+          <button class="tx-del" onclick="delTx('${t.id}')">×</button>
+        </div>`;
+      });
+      h+=`</div>`;
+    });
+  }
+  document.getElementById('tab-gastos').innerHTML=h;
+}
+
+function switchPeriod(p){curPeriod=p;renderGastos();}
+
+// ─── DEUDAS ───────────────────────────────────────────────────────────────
+function renderDeudas(){
+  const total=debts.filter(d=>d.st!=='done').reduce((a,d)=>a+d.bal,0);
+  const paid=debts.reduce((a,d)=>a+(d.orig-d.bal),0);
+  const orig=debts.reduce((a,d)=>a+d.orig,0);
+  const pct=Math.round(paid/orig*100);
+
+  let h=`<div class="card fin" style="border-color:rgba(212,255,71,.2);">
+    <div class="sec-lbl">Total pendiente</div>
+    <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--red);">${fmt(total)}</div>
+    <div class="bar-wrap">
+      <div class="bar-lbl"><span style="color:var(--green);">${pct}% pagado</span><span>${fmt(paid)} de ${fmt(orig)}</span></div>
+      <div class="bar-bg"><div class="bar-fill" style="width:${pct}%;background:var(--green);"></div></div>
+    </div>
+    <div style="font-size:10px;color:var(--muted);margin-top:6px;">Meta: Agosto 2027 · Deuda total $0 🏁</div>
+  </div>`;
+
+  debts.forEach(d=>{
+    const p=Math.round((d.orig-d.bal)/d.orig*100);
+    const sl=d.st==='done'?'Pagada':d.st==='auto'?'Auto':'Activa';
+    h+=`<div class="dcard fin">
+      <div class="dcard-hdr">
+        <div>
+          <div class="dcard-name">${d.n}</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px;">${d.note||''}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;">
+          <span class="dpill ${d.st}">${sl}</span>
+          ${d.st!=='done'?`<button onclick="editDebt('${d.id}')" style="font-size:10px;color:var(--muted);background:var(--s3);border:1px solid var(--border);padding:2px 8px;cursor:pointer;font-family:'DM Mono',monospace;">Actualizar</button>`:''}
+        </div>
+      </div>
+      <div class="dprog"><div class="dprog-fill" style="width:${p}%;background:${d.c};"></div></div>
+      <div class="row"><span class="rl">Saldo</span><span class="rv" style="color:${d.st==='done'?'var(--green)':'var(--red)'};">${d.st==='done'?'$0 ✓':fmt(d.bal)}</span></div>
+      <div class="row"><span class="rl">Original</span><span class="rv">${fmt(d.orig)}</span></div>
+    </div>`;
+  });
+
+  // MSI section
+  const totalMSI=MSI_INIT.reduce((a,m)=>a+(m.total-m.paid),0);
+  h+=`<div class="sec-lbl" style="margin-top:16px;">Compras a meses sin interés (MSI)</div>
+  <div style="font-size:10px;color:var(--muted);margin-bottom:8px;">No generan interés pero comprometen el mínimo mensual</div>`;
+  MSI_INIT.forEach(m=>{
+    const pct=Math.round(m.paid/m.total*100);
+    const remaining=m.total-m.paid;
+    h+=`<div class="msi-card fin">
+      <div class="msi-name">${m.name} <span style="font-size:10px;color:var(--blue);">[${m.card}]</span></div>
+      <div class="row" style="padding:4px 0;">
+        <span class="rl" style="font-size:11px;">Pendiente</span>
+        <span style="color:var(--blue);font-size:12px;font-weight:600;">${fmt(remaining)}</span>
+      </div>
+      <div class="row" style="padding:4px 0;border-bottom:none;">
+        <span class="rl" style="font-size:10px;">$${m.monthly}/mes · ${Math.ceil(remaining/m.monthly)} meses restantes</span>
+        <span style="font-size:10px;color:var(--muted);">${pct}% pagado</span>
+      </div>
+      <div class="msi-prog"><div class="msi-fill" style="width:${pct}%;"></div></div>
+    </div>`;
+  });
+
+  const totalMSILabel=`Total MSI pendiente: ${fmt(totalMSI)}`;
+  h+=`<div style="font-size:10px;color:var(--muted);text-align:right;margin-top:-4px;margin-bottom:12px;">${totalMSILabel}</div>`;
+
+  // Banorte capital strategy
+  h+=`<div class="card fin" style="border-color:rgba(71,184,255,.2);">
+    <div class="sec-lbl">Estrategia Banorte — pagos a capital</div>
+    <div class="row"><span class="rl"><strong>~20 Dic 2026</strong><span class="sub">Aguinaldo → $3,000 a capital</span></span><span class="rv gld">-$3,000</span></div>
+    <div class="row"><span class="rl"><strong>Ene 2027</strong><span class="sub">Fondo → $15,000 a capital</span></span><span class="rv yel">-$15,000</span></div>
+    <div class="row"><span class="rl"><strong>Resultado</strong><span class="sub">De $34K baja a ~$12K → termina ago 2027</span></span><span class="rv pos">~ago 2027</span></div>
+    <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-size:10px;color:var(--muted);">
+      CLABE capital: <button class="copy-btn" onclick="copyClabe('072971000904056709')">📋 072971000904056709</button>
+    </div>
+  </div>`;
+
+  document.getElementById('tab-deudas').innerHTML=h;
+}
+
+function editDebt(id){
+  const d=debts.find(x=>x.id===id);if(!d)return;
+  const v=prompt(`Nuevo saldo de ${d.n}:\nActual: ${fmt(d.bal)}`,d.bal);
+  if(v===null)return;const n=parseFloat(v);
+  if(isNaN(n)||n<0){toast('Monto inválido');return;}
+  d.bal=n;if(n===0)d.st='done';
+  save();renderDeudas();toast('Actualizado ✓');
+}
+
+// ─── WISHLIST ─────────────────────────────────────────────────────────────
+function getWishStatus(price){
+  // Current disposable after obligations ~$400/week
+  const weeklyFree=400;
+  const monthlyFree=weeklyFree*4.3;
+  if(price<=weeklyFree*2)return{label:'Puedes comprarlo',cls:'affordable',color:'var(--green)',months:0};
+  const months=Math.ceil(price/monthlyFree);
+  if(months<=3)return{label:`En ~${months} mes${months>1?'es':''}`,cls:'soon',color:'var(--gold)',months};
+  // Check against bonus dates
+  if(price<=7000)return{label:'Con fondo ahorro ene 2027',cls:'later',color:'var(--muted)',months:8};
+  return{label:'Post-deuda: ago 2027+',cls:'later',color:'var(--muted)',months:15};
+}
+
+function renderWishlist(){
+  const sorted=[...wishlist].sort((a,b)=>a.price-b.price);
+
+  let h=`<div class="card fin" style="border-color:rgba(192,132,252,.2);">
+    <div class="sec-lbl">Tu wishlist · cuándo puedes comprar cada cosa</div>
+    <div style="font-size:10px;color:var(--muted);line-height:1.7;">Basado en ~$400/sem libre después de deudas y gastos fijos. Se actualiza sola conforme liquidas deudas.</div>
+  </div>`;
+
+  if(!sorted.length){
+    h+=`<div style="text-align:center;padding:40px 0;color:var(--muted);"><div style="font-size:32px;margin-bottom:8px;opacity:.4;">✨</div>Sin items · agrega algo</div>`;
+  } else {
+    sorted.forEach(w=>{
+      const st=getWishStatus(w.price);
+      h+=`<div class="wish-card ${st.cls} fin">
+        <button class="wish-del" onclick="delWish('${w.id}')">×</button>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+          <div style="font-size:28px;">${w.emoji}</div>
+          <div>
+            <div class="wish-name">${w.name}</div>
+            <div class="wish-price" style="color:${st.color};">${fmt(w.price)}</div>
+          </div>
+        </div>
+        ${w.note?`<div style="font-size:10px;color:var(--muted);margin-bottom:6px;">${w.note}</div>`:''}
+        <span class="wish-status ${st.cls}">${st.label}</span>
+      </div>`;
+    });
+  }
+
+  h+=`<button onclick="openWishModal()" style="width:100%;padding:13px;background:var(--s2);border:1px dashed var(--border2);color:var(--muted);font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;margin-top:4px;">+ Agregar a la wishlist</button>`;
+
+  h+=`<div class="alert info fin" style="margin-top:10px;">
+    <div class="ai">💡</div>
+    <div class="ab"><strong>Cómo funciona:</strong><br>
+    El cálculo usa ~$400/sem libre actualmente. Cuando BBVA y Digitt terminen (nov 2026) sube a ~$1,200/sem libre. Post-deuda (ago 2027) todo el ingreso es tuyo.</div>
+  </div>`;
+
+  document.getElementById('tab-wishlist').innerHTML=h;
+}
+
+function delWish(id){
+  wishlist=wishlist.filter(w=>w.id!==id);
+  save();renderWishlist();toast('Eliminado');
+}
+
+function openWishModal(){
+  modalMode='wish';
+  document.getElementById('mtitle').textContent='Agregar a wishlist';
+  document.getElementById('modal-body').innerHTML=`
+    <div class="fg"><label class="flbl">Nombre</label><input class="finp" id="w-name" placeholder="¿Qué quieres?" type="text" maxlength="50"></div>
+    <div class="fg"><label class="flbl">Precio estimado</label><input class="finp big" id="w-price" type="number" inputmode="decimal" placeholder="0"></div>
+    <div class="fg"><label class="flbl">Emoji</label><input class="finp" id="w-emoji" placeholder="🎮" maxlength="2" style="font-size:24px;text-align:center;"></div>
+    <div class="fg"><label class="flbl">Nota (opcional)</label><input class="finp" id="w-note" placeholder="Por qué lo quieres" type="text" maxlength="80"></div>
+    <button class="save-btn" onclick="saveWish()">Agregar ✨</button>
+  `;
+  document.getElementById('overlay').classList.add('on');
+}
+
+function saveWish(){
+  const name=document.getElementById('w-name').value.trim();
+  const price=parseFloat(document.getElementById('w-price').value);
+  const emoji=document.getElementById('w-emoji').value.trim()||'✨';
+  const note=document.getElementById('w-note').value.trim();
+  if(!name||!price||price<=0){toast('Nombre y precio requeridos');return;}
+  wishlist.push({id:Date.now().toString(),name,price,emoji,note});
+  save();closeModal();renderWishlist();toast('Agregado a wishlist ✨');
+}
+
+// ─── SALUD ────────────────────────────────────────────────────────────────
+function renderSalud(){
+  const today=new Date().toISOString().split('T')[0];
+
+  let h=`<div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800;margin-bottom:12px;">Salud & Medicamentos</div>`;
+
+  // Rx cards
+  rxList.forEach(rx=>{
+    const expDate=addDays(rx.date,rx.days);
+    const daysLeft=daysUntil(expDate);
+    const pct=Math.max(0,Math.round(daysLeft/rx.days*100));
+    const color=daysLeft>10?'var(--green)':daysLeft>3?'var(--gold)':'var(--red)';
+    const urgency=daysLeft<=0?'🔴 VENCIDA':daysLeft<=3?'🔴 Urgente':daysLeft<=10?'🟡 Pronto':'🟢 OK';
+
+    h+=`<div class="rx-card fin" style="${daysLeft<=3?'border-color:rgba(255,77,109,.3);':''}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+        <div class="rx-name">💊 ${rx.name}</div>
+        <span style="font-size:10px;color:${color};font-weight:700;">${urgency}</span>
+      </div>
+      <div style="display:flex;gap:16px;align-items:flex-end;">
+        <div>
+          <div class="rx-days" style="color:${color};">${daysLeft<=0?'0':daysLeft}</div>
+          <div class="rx-label">${daysLeft<=0?'Vencida':'días restantes'}</div>
+        </div>
+        <div style="flex:1;">
+          <div style="font-size:10px;color:var(--muted);margin-bottom:4px;">Vence: ${fmtDate(expDate)}</div>
+          <div class="rx-bar"><div class="rx-fill" style="width:${pct}%;background:${color};"></div></div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px;">${rx.note}</div>
+        </div>
+      </div>
+      ${rx.controlled?`<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
+        <div style="font-size:10px;color:var(--orange);">⚠️ Medicamento controlado — requiere receta firmada por psiquiatra</div>
+        ${daysLeft<=7?`<button onclick="updateRxDate('${rx.id}')" style="margin-top:6px;padding:5px 10px;background:var(--accent);color:#000;border:none;font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;">Renovar fecha de receta</button>`:''}
+      </div>`:`
+        <button onclick="updateRxDate('${rx.id}')" style="margin-top:8px;padding:5px 10px;background:var(--s3);border:1px solid var(--border);color:var(--muted);font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;">Actualizar fecha</button>
+      `}
+    </div>`;
+  });
+
+  // Medical appointments tracker
+  h+=`<div class="card fin" style="margin-top:4px;">
+    <div class="sec-lbl">Citas médicas pendientes</div>
+    <div class="row"><span class="rl"><strong>Psiquiatra</strong><span class="sub">27 Jul 2026 · $1,500 · privado</span></span><span class="rv orn">~49 días</span></div>
+    <div class="row"><span class="rl"><strong>Urólogo</strong><span class="sub">IMSS — $0 · agendar pronto</span></span><span class="rv neg">Pendiente</span></div>
+    <div class="row"><span class="rl"><strong>Ortopedista</strong><span class="sub">IMSS — $0 · pendiente</span></span><span class="rv neg">Pendiente</span></div>
+    <div class="row"><span class="rl"><strong>Dermatólogo</strong><span class="sub">IMSS — $0 · pendiente</span></span><span class="rv neg">Pendiente</span></div>
+    <div class="row"><span class="rl"><strong>Dentista</strong><span class="sub">IMSS — $0 · pendiente</span></span><span class="rv neg">Pendiente</span></div>
+  </div>`;
+
+  h+=`<div class="alert warn fin">
+    <div class="ai">⚠️</div>
+    <div class="ab"><strong>Recuerda:</strong><br>
+    La receta del Metilfenidato vence 30 días después de emitida. Agenda con el psiquiatra al menos 1 semana antes para no quedarte sin medicamento.</div>
+  </div>`;
+
+  document.getElementById('tab-salud').innerHTML=h;
+}
+
+function updateRxDate(id){
+  const rx=rxList.find(r=>r.id===id);if(!rx)return;
+  const today=new Date().toISOString().split('T')[0];
+  rx.date=today;
+  save();renderSalud();toast('Fecha de receta actualizada ✓');
+}
+
+// ─── Modal expense/income ──────────────────────────────────────────────────
+function openModal(t){
+  modalMode=t;
+  curType=t;
+  document.getElementById('mtitle').textContent=t==='income'?'Nuevo ingreso':'Nuevo gasto';
+  document.getElementById('modal-body').innerHTML=`
+    <div class="type-row">
+      <button class="tybtn exp ${t==='expense'?'on':''}" id="btn-exp" onclick="setType('expense')">Gasto</button>
+      <button class="tybtn inc ${t==='income'?'on':''}" id="btn-inc" onclick="setType('income')">Ingreso</button>
+    </div>
+    <div class="fg"><label class="flbl">Monto</label><input class="finp big" id="inp-amt" type="number" inputmode="decimal" placeholder="0"></div>
+    <div class="fg"><label class="flbl">Descripción</label><input class="finp" id="inp-desc" type="text" placeholder="¿Qué fue?" maxlength="60"></div>
+    <div class="fg"><label class="flbl">Categoría</label><div class="cat-grid" id="cat-grid"></div></div>
+    <div class="fg"><label class="flbl">Fecha</label><input class="finp" id="inp-date" type="date"></div>
+    <button class="save-btn" onclick="saveTx()">Guardar</button>
+  `;
+  document.getElementById('inp-date').value=new Date().toISOString().split('T')[0];
+  curCat=t==='income'?'salary':'other';
+  renderCats();
+  document.getElementById('overlay').classList.add('on');
+  setTimeout(()=>{const a=document.getElementById('inp-amt');if(a)a.focus();},300);
+}
+
+function closeModal(){document.getElementById('overlay').classList.remove('on');}
+function closeOut(e){if(e.target===document.getElementById('overlay'))closeModal();}
+
+function setType(t){
+  curType=t;
+  const be=document.getElementById('btn-exp'),bi=document.getElementById('btn-inc');
+  if(be)be.classList.toggle('on',t==='expense');
+  if(bi)bi.classList.toggle('on',t==='income');
+  document.getElementById('mtitle').textContent=t==='income'?'Nuevo ingreso':'Nuevo gasto';
+  if(t==='income')curCat='salary';
+  else if(['salary','bonus'].includes(curCat))curCat='other';
+  renderCats();
+}
+
+function renderCats(){
+  const cg=document.getElementById('cat-grid');if(!cg)return;
+  const cs=curType==='income'?CATS.filter(c=>['salary','bonus','save','other'].includes(c.id)):CATS.filter(c=>!['salary','bonus'].includes(c.id));
+  cg.innerHTML=cs.map(c=>`<div class="catb ${c.id===curCat?'on':''}" onclick="selCat('${c.id}')"><span class="ce">${c.e}</span><span>${c.l}</span></div>`).join('');
+}
+
+function selCat(id){curCat=id;renderCats();}
+
+function saveTx(){
+  const amt=parseFloat(document.getElementById('inp-amt').value);
+  const desc=document.getElementById('inp-desc').value.trim()||'Sin descripción';
+  const date=document.getElementById('inp-date').value;
+  if(!amt||amt<=0){toast('Ingresa un monto');return;}
+  if(!date){toast('Selecciona fecha');return;}
+  txs.push({id:Date.now().toString(),type:curType,amt,desc,cat:curCat,date});
+  save();closeModal();render();toast(curType==='income'?'Ingreso guardado ✓':'Gasto guardado ✓');
+}
+
+function delTx(id){txs=txs.filter(t=>t.id!==id);save();render();toast('Eliminado');}
+
+// ─── Tabs ─────────────────────────────────────────────────────────────────
+function switchTab(tab,btn){
+  document.querySelectorAll('.navt').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  curTab=tab;
+  ['ahora','presup','gastos','deudas','wishlist','salud'].forEach(t=>{
+    document.getElementById(`tab-${t}`).classList.toggle('on',t===tab);
+  });
+  render();
+}
+
+function toast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('on');
+  setTimeout(()=>t.classList.remove('on'),2200);
+}
+
+function render(){
+  if(curTab==='ahora')renderAhora();
+  else if(curTab==='presup')renderPresup();
+  else if(curTab==='gastos')renderGastos();
+  else if(curTab==='deudas')renderDeudas();
+  else if(curTab==='wishlist')renderWishlist();
+  else if(curTab==='salud')renderSalud();
+}
+
+load();selWk=1;render();
+</script>
+</body>
+</html>
