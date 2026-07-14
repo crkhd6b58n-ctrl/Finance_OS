@@ -14,7 +14,8 @@
 <!-- Modo standalone en iOS — para que al agregarlo a la pantalla de inicio
      abra como app, sin la barra de Safari -->
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Ivan Finance">
 <meta name="theme-color" content="#081a0e">
 
@@ -29,10 +30,10 @@
   --r:16px;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-html,body{height:100%;overflow:hidden;}
+html,body{height:100%;overflow:hidden;position:fixed;inset:0;width:100%;overscroll-behavior:none;}
 body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;font-size:14px;-webkit-font-smoothing:antialiased;}
-.shell{display:flex;flex-direction:column;height:100vh;height:100dvh;}
-.topbar{flex-shrink:0;display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid var(--border);}
+.shell{display:flex;flex-direction:column;height:100%;width:100%;}
+.topbar{flex-shrink:0;display:flex;justify-content:space-between;align-items:center;padding:calc(14px + env(safe-area-inset-top,0)) 18px 14px;border-bottom:1px solid var(--border);}
 .topbar-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;letter-spacing:-0.3px;}
 .topbar-title span{color:var(--accent);}
 .scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:20px 18px 40px;}
