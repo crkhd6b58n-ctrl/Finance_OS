@@ -196,14 +196,14 @@ const INCOME={full:4614,cut:3239};
 // veníamos usando, no se inventa nada nuevo. 'auto' = se paga solo (nómina),
 // no requiere que Ivan haga nada; el resto sí se puede abonar a mano.
 const DEBTS_INIT=[
-  {id:'plata',  n:'Plata Card',bal:1853.84,rate:1.199,dueDate:'2026-07-27',status:'active',monthlyTarget:672.24},
-  {id:'familiar',n:'Préstamo familiar (mamá + tío)',bal:54100,rate:0,dueDate:'2027-01-31',status:'active'},
-  {id:'digitt', n:'Digitt',bal:18336,rate:0.37,dueDate:'2026-08-01',status:'active',monthlyTarget:3664},
-  {id:'banorte',n:'Banorte Nómina',bal:33494.14,rate:0.44,dueDate:null,status:'auto'},
-  {id:'novia',  n:'A tu novia (Lego + Crunchy)',bal:2193,rate:0,dueDate:'2026-07-31',status:'active'},
-  {id:'mama',   n:'A tu mamá (tatuaje)',bal:8000,rate:0,dueDate:'2026-07-31',status:'active'},
-  {id:'nu',     n:'Nu Oro',bal:0,rate:0.699,dueDate:null,status:'done'},
-  {id:'bbva',   n:'BBVA Azul',bal:12411.98,rate:0.6874,dueDate:null,status:'active',note:'Incluye llantas financiadas + penalización, saldo real 13 jul 2026'},
+  {id:'plata',  n:'Plata Card',bal:1853.84,orig:2000,   rate:1.199,dueDate:'2026-07-27',status:'active',monthlyTarget:672.24},
+  {id:'familiar',n:'Préstamo familiar (mamá + tío)',bal:54100,orig:54100,rate:0,dueDate:'2027-01-31',status:'active'},
+  {id:'digitt', n:'Digitt',bal:18336,orig:27996,  rate:0.37,dueDate:'2026-08-01',status:'active',monthlyTarget:3664},
+  {id:'banorte',n:'Banorte Nómina',bal:33494.14,orig:41000,rate:0.44,dueDate:null,status:'auto'},
+  {id:'novia',  n:'A tu novia (Lego + Crunchy)',bal:2193,orig:2193,rate:0,dueDate:'2026-07-31',status:'active'},
+  {id:'mama',   n:'A tu mamá (tatuaje)',bal:8000,orig:8000,rate:0,dueDate:'2026-07-31',status:'active'},
+  {id:'nu',     n:'Nu Oro',bal:4463.35,orig:4463.35,rate:0.699,dueDate:'2026-08-17',status:'active',monthlyTarget:4463.35,note:'Corte 6 ago · "tus gastos actuales en la tarjeta" · ciclo nuevo desde jul 2026 — el ciclo anterior se liquidó con el préstamo familiar'},
+  {id:'bbva',   n:'BBVA Azul',bal:12411.98,orig:12411.98,rate:0.6874,dueDate:'2026-08-03',status:'active',monthlyTarget:3897.25,note:'Corte 13 jul · pago para no generar intereses $3,897.25 (incluye MSI del corte + intereses $1,148.06 + penalización $490 ya reflejados)'},
 ];
 
 // Tarjetas/cuentas elegibles para pagar un gasto. 'cash' sale directo de tu
@@ -239,9 +239,9 @@ const MSI_INIT=[
   {id:'amazon1',name:'Amazon 11/12',total:4799,paid:4799.00,monthly:399.91,card:'Nu',cutoffDay:6},
   {id:'amazon3',name:'Amazon (nuevo A)',total:1665.55,paid:555.20,monthly:277.60,card:'Nu',cutoffDay:6},
   {id:'amazon4',name:'Amazon (nuevo B)',total:551.57,paid:183.86,monthly:91.93,card:'Nu',cutoffDay:6},
-  {id:'llantas',name:'Llantas (Econollantas)',total:11175,paid:0,monthly:Math.round((11175/9)*100)/100,card:'BBVA',cutoffDay:13},
-  {id:'amazon2',name:'Amazon 5/6',total:1572.98,paid:1315,monthly:263,card:'BBVA',cutoffDay:13},
-  {id:'sria',   name:'Sría. Hda. Sonora',total:1749,paid:1460,monthly:292,card:'BBVA',cutoffDay:13},
+  {id:'llantas',name:'Llantas (Econollantas)',total:11175,paid:1242,monthly:1242,card:'BBVA',cutoffDay:13},
+  {id:'amazon2',name:'Amazon 5/6',total:1572.98,paid:1572.98,monthly:257.98,card:'BBVA',cutoffDay:13},
+  {id:'sria',   name:'Sría. Hda. Sonora',total:1749,paid:1749,monthly:289,card:'BBVA',cutoffDay:13},
 ];
 
 function load(){
@@ -547,7 +547,8 @@ function renderMSI(){
   let h=`<div class="dtotal">
     <div class="dtotal-label">MSI pendiente</div>
     <div class="dtotal-amt" style="color:var(--accent);">${fmt(total)}</div>
-  </div>`;
+  </div>
+  <div style="font-size:9.5px;color:var(--muted);margin-top:6px;text-align:center;">Las que están en una tarjeta (Nu, BBVA) ya cuentan dentro del saldo de esa tarjeta en Deudas y Semana — aquí solo llevas cuántos pagos les faltan.</div>`;
 
   if(!active.length){
     h+=`<div class="empty">No tienes MSI activos</div>`;
@@ -555,6 +556,7 @@ function renderMSI(){
   active.sort((a,b)=>(a.total-a.paid)-(b.total-b.paid)).forEach(m=>{
     const remaining=m.total-m.paid;
     const monthsLeft=Math.max(1,Math.ceil(remaining/m.monthly));
+    const linkedCard=ACCOUNTS.find(a=>a.type==='credit'&&a.cutoffDay&&a.name.toLowerCase()===String(m.card||'').toLowerCase());
     h+=`<div class="dcard">
       <div class="dcard-top">
         <div>
@@ -563,7 +565,8 @@ function renderMSI(){
         </div>
         <div class="dcard-bal">${fmt(remaining)}</div>
       </div>
-      <button class="dcard-pay" onclick="confirmMSIPayment('${m.id}')">✓ Confirmar pago de este mes — ${fmt(Math.min(m.monthly,remaining))}</button>
+      ${linkedCard?`<button class="dcard-pay" onclick="confirmMSIPayment('${m.id}')">✓ Marcar mes ${Math.round(m.paid/m.monthly)+1} confirmado (no toca tu Disponible)</button>`
+                  :`<button class="dcard-pay" onclick="confirmMSIPayment('${m.id}')">✓ Confirmar pago de este mes — ${fmt(Math.min(m.monthly,remaining))}</button>`}
     </div>`;
   });
 
@@ -574,7 +577,15 @@ function renderMSI(){
 function confirmMSIPayment(id){
   const m=msiList.find(x=>x.id===id);if(!m)return;
   const amt=Math.min(m.monthly,m.total-m.paid);
+  const linkedCard=ACCOUNTS.find(a=>a.type==='credit'&&a.cutoffDay&&a.name.toLowerCase()===String(m.card||'').toLowerCase());
   m.paid+=amt;
+  if(linkedCard){
+    // Ya está contado en el saldo de la tarjeta — esto es solo llevar la
+    // cuenta de cuántos meses van, no un cobro nuevo.
+    save();render();
+    toast(`${m.name} — mes confirmado ✓ (ya estaba en el saldo de ${m.card})`);
+    return;
+  }
   balance.amount-=amt;
   balance.updated=todayKey();
   log.push({id:Date.now().toString(),type:'gasto',amt,desc:`MSI ${m.name}`,cat:'otros',ts:new Date().toISOString()});
@@ -619,9 +630,6 @@ function monthLabel(dateStr){
 
 function renderPlan(){
   const timeline=[];
-  debts.filter(d=>d.status!=='done'&&d.dueDate).forEach(d=>{
-    timeline.push({name:d.n,icon:'💳',type:'expense',amount:d.bal,remaining:d.bal,saved:0,date:d.dueDate,note:'Deuda',pending:false});
-  });
   planItems.forEach(p=>{
     const saved=p.saved||0;
     const remaining=p.amount!==null?Math.max(0,p.amount-saved):null;
@@ -642,11 +650,33 @@ function renderPlan(){
   const pendingCount=timeline.filter(t=>t.pending).length;
 
   let h=`<div class="dtotal">
-    <div class="dtotal-label">Panorama fin de año</div>
+    <div class="dtotal-label">Panorama de compromisos (no deuda)</div>
     <div class="dtotal-amt" style="color:${knownIncome-knownExpense>=0?'var(--accent)':'var(--urgent)'};font-size:28px;">${fmt(knownIncome-knownExpense)}</div>
-    <div style="font-size:10.5px;color:var(--muted);margin-top:4px;">${fmt(knownIncome)} conocido en ingresos − ${fmt(knownExpense)} que falta${pendingCount?` · ${pendingCount} por definir`:''}</div>
+    <div style="font-size:10.5px;color:var(--muted);margin-top:4px;">${fmt(knownIncome)} conocido en ingresos − ${fmt(knownExpense)} en cumpleaños/navidad/viaje${pendingCount?` · ${pendingCount} por definir`:''}</div>
     ${totalSaved>0?`<div style="font-size:11px;color:var(--accent);margin-top:6px;">✓ Ya llevas ${fmt(totalSaved)} apartado entre todo</div>`:''}
   </div>`;
+
+  // Progreso visual por deuda — de un vistazo, cómo va bajando cada una.
+  // Ordenado por prioridad (igual que Deudas), no alfabético.
+  h+=`<div style="font-size:9.5px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin:20px 0 8px;">💳 Progreso de deudas</div>`;
+  const allDebtsForProgress=[...computeDebtPriority(),...debts.filter(d=>d.status==='done')];
+  allDebtsForProgress.forEach(d=>{
+    const orig=d.orig||d.bal||1;
+    const pct=Math.min(100,Math.round((orig-d.bal)/orig*100));
+    const done=d.status==='done'||d.bal<=0;
+    h+=`<div class="dcard" style="border-left-color:${done?'var(--accent)':'var(--urgent)'};">
+      <div class="dcard-top">
+        <div>
+          <div class="dcard-name">${d.n}${done?' ✅':''}</div>
+          <div class="dcard-tag">${done?'Liquidada':`${fmt(d.bal)} de ${fmt(orig)}`}${d.rate?` · ${Math.round(d.rate*100)}% interés`:''}</div>
+        </div>
+        <div class="dcard-bal" style="color:${done?'var(--accent)':'var(--text)'};">${pct}%</div>
+      </div>
+      <div class="bwrap" style="margin-top:8px;">
+        <div class="bbg"><div class="bfill" style="width:${pct}%;background:${done?'var(--accent)':pct>=50?'#ffc847':'var(--urgent)'};"></div></div>
+      </div>
+    </div>`;
+  });
 
   // Agrupa por mes — así ves en cuál vas a necesitar liberar más dinero,
   // no solo una lista plana. Un renglón "saldo acumulado" te dice cómo
@@ -882,16 +912,23 @@ function computeWeeklyPlan(){
     return {inWeek:false,nextDate:null};
   }
   // Para deudas con fecha (como Digitt), cuántas semanas faltan a la
-  // PRÓXIMA fecha real (si ya pasó, asume que se repite cada mes en ese
-  // mismo día — como un corte de tarjeta) — así se reparte igual que
-  // Digitt, no con un % genérico dividido entre 4.33 siempre.
+  // PRÓXIMA fecha real. Si la fecha guardada todavía no pasa, se usa TAL
+  // CUAL (respeta mes y año, no solo el día) — si ya pasó (dato viejo sin
+  // actualizar), ahí sí se asume que se repite cada mes en ese mismo día,
+  // como un corte de tarjeta, y busca la próxima ocurrencia.
   function weeksUntilNextMonthly(dateStr){
     if(!dateStr)return null;
-    const day=new Date(dateStr+'T12:00').getDate();
-    let probe=new Date(todayKey()+'T12:00');
+    const today=new Date(todayKey()+'T12:00');
+    const exact=new Date(dateStr+'T12:00');
+    if(exact>=today){
+      const days=Math.ceil((exact-today)/(1000*60*60*24));
+      return {days,weeks:Math.max(1,days/7),date:dateStr};
+    }
+    const day=exact.getDate();
+    let probe=new Date(today);
     for(let i=0;i<40;i++){
-      if(probe.getDate()===day&&probe>=new Date(todayKey()+'T12:00')){
-        const days=Math.ceil((probe-new Date(todayKey()+'T12:00'))/(1000*60*60*24));
+      if(probe.getDate()===day&&probe>=today){
+        const days=Math.ceil((probe-today)/(1000*60*60*24));
         return {days,weeks:Math.max(1,days/7),date:probe.toISOString().slice(0,10)};
       }
       probe.setDate(probe.getDate()+1);
@@ -906,48 +943,45 @@ function computeWeeklyPlan(){
   const digitt=debts.find(d=>d.id==='digitt');
   const digittWeekly=digitt&&digitt.status!=='done'?digitt.monthlyTarget/4.33:0;
 
-  // 3. MSI activos — se agrupan por tarjeta real. Todos los MSI de "Nu" se
-  // cobran juntos en el corte de Nu (día 6), no cada uno por su lado — así
-  // que se suman en UNA sola línea "Nu" con lo que le toca a esa tarjeta
-  // esta semana. Lo que no matchea a una tarjeta conocida (ej. el préstamo
-  // de Mercado Pago) se queda como línea individual — de MSI.
+  // 3. MSI activos — los que están ligados a una tarjeta real (Nu, BBVA)
+  // YA están incluidos en el saldo total de esa tarjeta (debts.bal), así
+  // que NO se cuentan aparte aquí — eso era el doble conteo que traíamos.
+  // Se quedan solo como referencia, pegados a la fila de esa tarjeta más
+  // abajo. Lo que no es de ninguna tarjeta real (el préstamo de Mercado
+  // Pago) sí es su propio compromiso semanal, porque no vive en ningún
+  // "saldo de tarjeta" — de MSI.
   const msiActive=msiList.filter(m=>(m.total-m.paid)>0.5);
   const msiThisWeek=[],msiUpcoming=[];
-  const cardGroups={};
-  const ungroupedMsi=[];
+  const cardMsiRef={}; // {acctId: [{name,amount,monthsLeft}]}
   msiActive.forEach(m=>{
     const acct=ACCOUNTS.find(a=>a.type==='credit'&&a.cutoffDay&&a.name.toLowerCase()===String(m.card||'').toLowerCase());
+    const remaining=m.total-m.paid;
+    const monthsLeft=Math.max(1,Math.ceil(remaining/m.monthly));
     if(acct){
-      if(!cardGroups[acct.id])cardGroups[acct.id]={acctId:acct.id,name:acct.name,cutoffDay:acct.cutoffDay,items:[],amount:0};
-      const amt=Math.min(m.monthly,m.total-m.paid);
-      cardGroups[acct.id].items.push({id:m.id,name:m.name,amount:amt});
-      cardGroups[acct.id].amount+=amt;
+      if(!cardMsiRef[acct.id])cardMsiRef[acct.id]=[];
+      cardMsiRef[acct.id].push({name:m.name,monthsLeft});
     }else{
-      ungroupedMsi.push(m);
+      const amt=Math.min(m.monthly,remaining);
+      const {inWeek,nextDate}=dateThisWeekOrNext(m.cutoffDay);
+      if(inWeek)msiThisWeek.push({id:m.id,name:m.name,amount:amt,date:nextDate});
+      else msiUpcoming.push({id:m.id,name:m.name,amount:amt,date:nextDate,day:m.cutoffDay});
     }
-  });
-  Object.values(cardGroups).forEach(g=>{
-    const {inWeek,nextDate}=dateThisWeekOrNext(g.cutoffDay);
-    const entry={id:g.acctId,name:`${g.name} (${g.items.length} MSI)`,amount:g.amount,date:nextDate,items:g.items};
-    if(inWeek)msiThisWeek.push(entry); else msiUpcoming.push({...entry,day:g.cutoffDay});
-  });
-  ungroupedMsi.forEach(m=>{
-    const amt=Math.min(m.monthly,m.total-m.paid);
-    const {inWeek,nextDate}=dateThisWeekOrNext(m.cutoffDay);
-    if(inWeek)msiThisWeek.push({id:m.id,name:m.name,amount:amt,date:nextDate});
-    else msiUpcoming.push({id:m.id,name:m.name,amount:amt,date:nextDate,day:m.cutoffDay});
   });
   const msiThisWeekTotal=msiThisWeek.reduce((a,m)=>a+m.amount,0);
 
-  // 4. Deudas activas (avalancha) — igual que Digitt: se reparte entre las
-  // semanas que faltan a la PRÓXIMA fecha real de esa tarjeta/deuda, no un
-  // % genérico dividido siempre entre 4.33 — de Deudas
+  // 4. Deudas activas (avalancha) — el "bolsillo" semanal de cada tarjeta o
+  // préstamo: se reparte entre las semanas que faltan a su PRÓXIMA fecha
+  // real (corte, vencimiento), igual que Digitt. Cada vez que marcas esta
+  // línea en Semana, se abona de verdad a esa deuda — así el saldo mismo
+  // ES tu progreso, no hay un número de "aportado" aparte que cuadrar.
   const priority=computeDebtPriority();
   const otherDebts=priority.filter(d=>d.id!=='digitt'&&d.id!=='banorte'&&d.id!=='familiar');
   const otherMins=otherDebts.filter(d=>d.bal>0).map(d=>{
+    const isReal=!!d.monthlyTarget;
     const suggestedMonthly=d.monthlyTarget||Math.max(d.bal*0.08,200);
     const next=weeksUntilNextMonthly(d.dueDate);
-    return {id:d.id,name:d.n,weekly:next?suggestedMonthly/next.weeks:suggestedMonthly/4.33,bal:d.bal,nextDate:next?next.date:null};
+    const weeks=next?next.weeks:4.33;
+    return {id:d.id,name:d.n,weekly:suggestedMonthly/weeks,bal:d.bal,nextDate:next?next.date:null,msiRef:cardMsiRef[d.id]||null,target:suggestedMonthly,weeksLeft:weeks,isReal};
   });
   const otherMinsTotal=otherMins.reduce((a,d)=>a+d.weekly,0);
 
@@ -1030,7 +1064,12 @@ function renderSemana(){
     ${p.digittWeekly?checkRow(p.wkStart,'digitt','💳','Digitt','Ahorro semanal · Deudas',p.digittWeekly):''}
     ${p.msiThisWeek.map(m=>checkRow(p.wkStart,`msi_${m.id}`,'🗓️',m.name,`Corte ${fmtDate(m.date)} · MSI`,m.amount,m.items)).join('')}
     ${p.subsThisWeek.map(s=>checkRow(p.wkStart,`sub_${s.id}`,'🔁',s.name,`Se cobra ${fmtDate(s.date)} · Suscripciones`,s.amount)).join('')}
-    ${p.otherMins.map(d=>checkRow(p.wkStart,`debtmin_${d.id}`,'💳',`${d.name} (mínimo)`,d.nextDate?`Próximo corte ${fmtDate(d.nextDate)} · Deudas`:'Deudas',d.weekly)).join('')}
+    ${p.otherMins.map(d=>{
+      const msiNote=d.msiRef&&d.msiRef.length?` · incluye ${d.msiRef.map(r=>`${r.name} (${r.monthsLeft}m)`).join(', ')}`:'';
+      const weeksTxt=d.weeksLeft?d.weeksLeft.toFixed(1):'4.3';
+      const formula=`${fmt(d.target)} entre ${weeksTxt} sem. hasta ${d.nextDate?fmtDate(d.nextDate):'—'}${d.isReal?'':' (estimado, sin dato real)'}`;
+      return checkRow(p.wkStart,`debtmin_${d.id}`,'💳',`${d.name} (bolsillo)`,formula+msiNote,d.weekly);
+    }).join('')}
   </div>`;
 
   if(p.datedCommitments.length){
@@ -1177,9 +1216,12 @@ function delWishItem(id){
 function openCardRef(acctId){
   const a=ACCOUNTS.find(x=>x.id===acctId);if(!a)return;
   const ref=cardRefs[acctId];
-  document.getElementById('mtitle').textContent=`Saldo real — ${a.name}`;
+  const d=debts.find(x=>x.id===a.debtId);
+  document.getElementById('mtitle').textContent=`Actualizar — ${a.name}`;
   document.getElementById('mbody').innerHTML=`
-    <div class="fg"><label class="flbl">¿Cuánto dice tu estado de cuenta que debes?</label><input class="finp big" id="ref-bal" type="number" inputmode="decimal" value="${ref?ref.balance:''}" placeholder="0" autofocus></div>
+    <div class="fg"><label class="flbl">¿Cuánto dice tu estado de cuenta que debes en total?</label><input class="finp big" id="ref-bal" type="number" inputmode="decimal" value="${ref?ref.balance:(d?d.bal:'')}" placeholder="0"></div>
+    <div class="fg"><label class="flbl">"Pago para no generar intereses" de este corte (el número real de tu app del banco, no lo adivinamos)</label><input class="finp" id="ref-target" type="number" inputmode="decimal" value="${d&&d.monthlyTarget?d.monthlyTarget:''}" placeholder="0"></div>
+    <div class="fg"><label class="flbl">Fecha límite de pago de este corte</label><input class="finp" id="ref-due" type="date" value="${d&&d.dueDate?d.dueDate:''}"></div>
     <div class="modal-actions">
       <button class="mbtn cancel" onclick="closeModal()">Cancelar</button>
       <button class="mbtn save" onclick="saveCardRef('${acctId}')">Guardar</button>
@@ -1188,11 +1230,19 @@ function openCardRef(acctId){
   setTimeout(()=>document.getElementById('ref-bal').focus(),50);
 }
 function saveCardRef(acctId){
+  const a=ACCOUNTS.find(x=>x.id===acctId);if(!a)return;
   const n=parseFloat(document.getElementById('ref-bal').value);
   if(isNaN(n)){toast('Ingresa un número válido');return;}
   cardRefs[acctId]={balance:n,updated:todayKey()};
+  const targetRaw=document.getElementById('ref-target').value;
+  const dueRaw=document.getElementById('ref-due').value;
+  const d=debts.find(x=>x.id===a.debtId);
+  if(d){
+    if(targetRaw!=='')d.monthlyTarget=parseFloat(targetRaw);
+    if(dueRaw)d.dueDate=dueRaw;
+  }
   save();closeModal();renderDeudas();
-  toast('Saldo de referencia guardado ✓');
+  toast('Actualizado ✓ — Semana ya usa estos datos');
 }
 
 function openPayDebt(id){
